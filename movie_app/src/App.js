@@ -1,33 +1,53 @@
-import React, { Component } from 'react';
-import './App.css';
-import Movie from './Movie';
+import React, { Component } from "react";
+import "./App.css";
+import Movie from "./Movie";
 
-const movies = [
-  {
-    title : "Matrix",
-    poster : "http://cphoto.asiae.co.kr/listimglink/1/201309251504533729386A_1.jpg"
-  },
-  {
-    title : "Full Metal Jacket",
-    poster : "https://img-s-msn-com.akamaized.net/tenant/amp/entityid/BBPNaiO.img?h=999&w=799&m=6&q=60&o=f&l=f&x=696&y=639"
-  },
-  {
-    title : "Oldboy",
-    poster : "http://image.fnnews.com/resource/media/image/2015/08/31/201508311444432540_l.jpg"
-  },
-  {
-    title : "Start Wars",
-    poster : "http://preimage.hankookilbo.com/i.aspx?Guid=8d14581758404fbe80badba89b5915d2&Month=DirectUpload&size=640"
+class App extends Component {
+  // Render: componentWillMount() -> render() -> componentDidMount()
+  // Update componentWillReceiveProps() -> shouldComponentUpdate() -> componentWillUpdate() -> render() -> componentDidUpdate()
+
+  state = {};
+
+  componentDidMount() {
+    this._getMovies();
   }
-]
 
-class App extends Component { // App : render function 어떤것을 보여줄지를 표시한다.
+  _renderMovies = () => {
+    const movies = this.state.movies.map(movie => {
+      return (
+        <Movie
+          title={movie.title_english}
+          poster={movie.large_cover_image}
+          key={movie.id}
+          genres={movie.genres}
+          synopsis={movie.synopsis}
+        />
+      );
+    });
+    return movies;
+  };
+
+  _getMovies = async () => {
+    const movies = await this._callApi();
+    this.setState({
+      movies
+    });
+  };
+
+  _callApi = () => {
+    return fetch(
+      "https://yts.am/api/v2/list_movies.json?sort_by=download_count"
+    )
+      .then(potato => potato.json())
+      .then(json => json.data.movies)
+      .catch(err => console.log(err));
+  };
+
   render() {
+    const { movies } = this.state;
     return (
-      <div className="App">
-        {movies.map((movie, index) =>{
-          return <Movie title={movie.title} poster={movie.poster} key={index} />
-        })}
+      <div className={movies ? "App" : "App--loading"}>
+        {movies ? this._renderMovies() : "Loading"}
       </div>
     );
   }
